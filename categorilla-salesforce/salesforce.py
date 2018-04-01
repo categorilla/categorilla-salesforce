@@ -70,13 +70,25 @@ class Cases:
         if not num_records > 0:
             return
 
-        # clean up the response
+'''
+Formatting for categorilla
+{
+    "top_n":1,
+    "records": [
+       ["id1", "Text"],
+       ["id2", "More text"]
+    ]
+}
+'''
+
+        # formating for update and categorilla
         cases = []
+        formatted_cases = []
         for record in res['records']:
+            formatted_cases.append([record['Id'], record['Description'])
             cases.append({'Id' : record['Id'],
                           'Description' : record['Description'],
                           self.STATUS_FIELD : self.STATUS_INPROGRESS})
-        print(cases)
 
         # update them as in progress in SF
         if cases:
@@ -90,7 +102,7 @@ class Cases:
                 print('Unexpected error:', sys.exc_info()[0])
                 raise
 
-        return cases
+        return formatted_cases
 
 
     # case_data = [{'Id': '0030000000AAAAA', 'Category': '14'},

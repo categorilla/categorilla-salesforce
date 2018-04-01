@@ -15,6 +15,7 @@ class Categorilla:
         self.TOKEN = config.get('cateogrilla', 'token')
         self.TOP_N = config.getint('categorilla', 'num_predicts')
 
+
     def send_text(self, records):
         url = self.BASE + self.PREDICT
         body = {'top_n': TOP_N, 'records': records}
