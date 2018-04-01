@@ -10,17 +10,17 @@ class Categorilla:
     def __init__(self):
         config = ConfigParser()
         config.read('../development.ini')
-        self.BASE = config.get('cateogrilla', 'url_base')
-        self.PROJECT = config.get('cateogrilla', 'project')
-        self.PREDICT = config.get('cateogrilla', 'url_predict')
-        self.POLL = config.get('cateogrilla', 'url_poll')
-        self.TOKEN = config.get('cateogrilla', 'token')
+        self.BASE = config.get('categorilla', 'url_base')
+        self.PROJECT = config.get('categorilla', 'project')
+        self.PREDICT = config.get('categorilla', 'url_predict')
+        self.POLL = config.get('categorilla', 'url_poll')
+        self.TOKEN = config.get('categorilla', 'token')
         self.TOP_N = config.getint('categorilla', 'num_predicts')
 
 
     def send_text(self, records):
         url = self.BASE + self.PROJECT + self.PREDICT
-        body = {'top_n': TOP_N, 'records': records}
+        body = {'top_n': self.TOP_N, 'records': records}
         headers = {'Authorization': 'Token {}'.format(self.TOKEN)}
         r = requests.post(url, data=body, headers=headers)
         return r.text

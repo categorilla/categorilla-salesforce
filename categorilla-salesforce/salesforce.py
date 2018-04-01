@@ -40,6 +40,7 @@ class Cases:
             config.get('salesforce', 'status_inprogress')
         self.STATUS_COMPLETE = \
             config.get('salesforce', 'status_complete')
+        self.CATEGORY_FIELD = config.get('salesforce','category_field')
         self.ADD_QUERY = config.get('salesforce', 'add_query')
         self.THRESHOLD = config.getfloat('categorilla','confidence_threshold')
 
@@ -71,22 +72,22 @@ class Cases:
         if not num_records > 0:
             return
 
-'''
-Formatting for categorilla
-{
-    "top_n":1,
-    "records": [
-       ["id1", "Text"],
-       ["id2", "More text"]
-    ]
-}
-'''
+        '''
+        Formatting for categorilla
+        {
+            "top_n":1,
+            "records": [
+               ["id1", "Text"],
+               ["id2", "More text"]
+            ]
+        }
+        '''
 
         # formating for update and categorilla
         cases = []
         formatted_cases = []
         for record in res['records']:
-            formatted_cases.append([record['Id'], record['Description'])
+            formatted_cases.append([record['Id'], record['Description']])
             cases.append({'Id' : record['Id'],
                           'Description' : record['Description'],
                           self.STATUS_FIELD : self.STATUS_INPROGRESS})
@@ -106,44 +107,44 @@ Formatting for categorilla
         return formatted_cases
 
 
-'''
-from categorilla will be in format:
-    "records": [
-        [
-            "id1",
-            [
-                {
-                    "category": "agri-business",
-                    "confidence": 0.760093629360199
-                }
+        '''
+        from categorilla will be in format:
+            "records": [
+                [
+                    "id1",
+                    [
+                        {
+                            "category": "agri-business",
+                            "confidence": 0.760093629360199
+                        }
+                    ]
+                ],
+                [
+                    "id2",
+                    [
+                        {
+                            "category": "agri-business",
+                            "confidence": 0.760093629360199
+                        }
+                    ]
+                ]
             ]
-        ],
-        [
-            "id2",
-            [
-                {
-                    "category": "agri-business",
-                    "confidence": 0.760093629360199
-                }
-            ]
-        ]
-    ]
 
-Needs to be in format
+        Needs to be in format
 
-case_data = [{'Id': '0030000000AAAAA', 'Category': '14'},
-{'Id': '0030000000BBBBB', 'Category': 'asdf'}]
-'''
+        case_data = [{'Id': '0030000000AAAAA', 'Category__c': '14',
+        Cateogrization_Status__c = "Categorized"},
+        {'Id': '0030000000BBBBB', 'Category__c': 'asdf'}]
+        '''
 
     def update_cases(self, records):
         case_data = []
 
         # reformat for salesforce
         for record in records:
-            case = {}
-            case.Id = record[0]
-            case.Category = record[1][0].category
             # if(record[1][0].confidence >= self.THRESHOLD)
-            case_data.append(case)
+            case_data.append({'Id' : record[0],
+                          self.CATEGORY_FIELD : record[1][0].category,
+                          self.STATUS_FIELD : self.STATUS_COMPLETE})
 
         return(self.sf.bulk.Case.update(case_data))

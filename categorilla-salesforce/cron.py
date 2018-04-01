@@ -3,11 +3,14 @@ import time
 from categorilla import Categorilla
 from salesforce import Cases
 
-sf = new salesforce.Cases()
-cat = new categorilla.Categorilla()
+sf = Cases()
+cat = Categorilla()
 
 # get the cases
 cases = sf.import_cases()
+
+if not cases:
+    quit()
 
 # call Categorilla
 predict_response = cat.send_text(cases)
