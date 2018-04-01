@@ -1,0 +1,19 @@
+[salesforce]
+username = XXXXXXXXXXXXX
+password = XXXXXXXXXXX
+token = XXXXXXXXXXXXX
+is_sandbox = false
+status_field = Categorization_State__c
+status_uncategorized = Uncategorized
+status_inprogress = Submitted
+status_complete = Complete
+add_query = AND Status = 'New'
+
+[cateogrilla]
+url_base = https://www.categorilla.com/api/project/
+project = XXXXX
+url_predict = /predict/
+url_poll = /poll_predict/
+token = XXXXXXXXXXXXXX
+num_predicts = 1
+confidence_threshold = 0.5
