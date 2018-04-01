@@ -41,6 +41,7 @@ class Cases:
         self.STATUS_COMPLETE = \
             config.get('salesforce', 'status_complete')
         self.ADD_QUERY = config.get('salesforce', 'add_query')
+        self.THRESHOLD = config.getfloat('categorilla','confidence_threshold')
 
 
     def import_cases(self):
@@ -70,13 +71,25 @@ class Cases:
         if not num_records > 0:
             return
 
-        # clean up the response
+'''
+Formatting for categorilla
+{
+    "top_n":1,
+    "records": [
+       ["id1", "Text"],
+       ["id2", "More text"]
+    ]
+}
+'''
+
+        # formating for update and categorilla
         cases = []
+        formatted_cases = []
         for record in res['records']:
+            formatted_cases.append([record['Id'], record['Description'])
             cases.append({'Id' : record['Id'],
                           'Description' : record['Description'],
                           self.STATUS_FIELD : self.STATUS_INPROGRESS})
-        print(cases)
 
         # update them as in progress in SF
         if cases:
@@ -90,10 +103,47 @@ class Cases:
                 print('Unexpected error:', sys.exc_info()[0])
                 raise
 
-        return cases
+        return formatted_cases
 
 
-    # case_data = [{'Id': '0030000000AAAAA', 'Category': '14'},
-    #  {'Id': '0030000000BBBBB', 'Category': 'asdf'}]
-    def update_cases(self, case_data):
+'''
+from categorilla will be in format:
+    "records": [
+        [
+            "id1",
+            [
+                {
+                    "category": "agri-business",
+                    "confidence": 0.760093629360199
+                }
+            ]
+        ],
+        [
+            "id2",
+            [
+                {
+                    "category": "agri-business",
+                    "confidence": 0.760093629360199
+                }
+            ]
+        ]
+    ]
+
+Needs to be in format
+
+case_data = [{'Id': '0030000000AAAAA', 'Category': '14'},
+{'Id': '0030000000BBBBB', 'Category': 'asdf'}]
+'''
+
+    def update_cases(self, records):
+        case_data = []
+
+        # reformat for salesforce
+        for record in records:
+            case = {}
+            case.Id = record[0]
+            case.Category = record[1][0].category
+            # if(record[1][0].confidence >= self.THRESHOLD)
+            case_data.append(case)
+
         return(self.sf.bulk.Case.update(case_data))
