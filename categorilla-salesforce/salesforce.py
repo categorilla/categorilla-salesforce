@@ -1,3 +1,5 @@
+import logging
+
 try:
     from configparser import ConfigParser
 except ImportError:
@@ -25,12 +27,12 @@ class Cases:
                                  sandbox=IS_SANDBOX,
                                  client_id=CLIENT_ID)
         except sfexcept.SalesforceAuthenticationFailed as err:
-            print('Salesforce Error: {0}'.format(err))
-            print('Username: {0}'.format(USERNAME))
-            print('Password: {0}'.format(PASSWORD))
-            print('Token: {0}'.format(TOKEN))
+            logging.error('Salesforce Error: {0}'.format(err))
+            logging.error('Username: {0}'.format(USERNAME))
+            logging.error('Password: {0}'.format(PASSWORD))
+            logging.error('Token: {0}'.format(TOKEN))
         except:
-            print('Unexpected error:', sys.exc_info()[0])
+            logging.error('Unexpected error:', sys.exc_info()[0])
             raise
 
         self.STATUS_FIELD = config.get('salesforce', 'status_field')
@@ -59,13 +61,13 @@ class Cases:
         try:
             res = self.sf.query(case_query)
             num_records = res['totalSize']
-            print('{0} records returned.'.format(num_records))
+            logging.info('{0} records returned.'.format(num_records))
         except sfexcept.SalesforceMalformedRequest as err:
-            print('Query error: {0}'.format(err))
-            print('Query: {0}'.format(case_query))
+            logging.error('Query error: {0}'.format(err))
+            logging.error('Query: {0}'.format(case_query))
             return
         except:
-            print('Unexpected error:', sys.exc_info()[0])
+            logging.error('Unexpected error:', sys.exc_info()[0])
             raise
 
         # no records, exit
@@ -77,8 +79,8 @@ class Cases:
         {
             "top_n":1,
             "records": [
-               ["id1", "Text"],
-               ["id2", "More text"]
+               {"id": "id1", "text": "This is the text"},
+               {"id": "id2", "text": "More text"}
             ]
         }
         '''
@@ -87,7 +89,12 @@ class Cases:
         cases = []
         formatted_cases = []
         for record in res['records']:
-            formatted_cases.append([record['Id'], record['Description']])
+            if(record['Description']):
+                rec = {}
+                rec['id'] = record['Id']
+                rec['text'] = record['Description']
+                formatted_cases.append(rec)
+            # we still want to mark as submitted even if there is no case text
             cases.append({'Id' : record['Id'],
                           'Description' : record['Description'],
                           self.STATUS_FIELD : self.STATUS_INPROGRESS})
@@ -96,12 +103,12 @@ class Cases:
         if cases:
             try:
                 response = self.sf.bulk.Case.update(cases)
-                print(response)
+                logging.info('Cases marked as submitted')
             except sfexcept.SalesforceMalformedRequest as err:
-                print('Update error: {0}'.format(err))
-                print('Update: {0}'.format(cases))
+                logging.error('Update error: {0}'.format(err))
+                logging.error('Update: {0}'.format(cases))
             except:
-                print('Unexpected error:', sys.exc_info()[0])
+                logging.error('Unexpected error:', sys.exc_info()[0])
                 raise
 
         return formatted_cases
@@ -142,9 +149,24 @@ class Cases:
 
         # reformat for salesforce
         for record in records:
-            # if(record[1][0].confidence >= self.THRESHOLD)
-            case_data.append({'Id' : record[0],
-                          self.CATEGORY_FIELD : record[1][0].category,
-                          self.STATUS_FIELD : self.STATUS_COMPLETE})
+            if(record['text'][0]['confidence'] >= self.THRESHOLD):
+                case_data.append({'Id': record['id'],
+                    self.CATEGORY_FIELD: record['text'][0]['category'],
+                    self.STATUS_FIELD: self.STATUS_COMPLETE})
+            else:
+                case_data.append({'Id': record['id'],
+                    self.STATUS_FIELD: self.STATUS_COMPLETE})
 
-        return(self.sf.bulk.Case.update(case_data))
+        # update them as in progress in SF
+        logging.debug(case_data)
+        if case_data:
+            try:
+                response = self.sf.bulk.Case.update(case_data)
+                logging.info('Cases updated with categories')
+            except sfexcept.SalesforceMalformedRequest as err:
+                logging.error('Update error: {0}'.format(err))
+                logging.error('Update: {0}'.format(case_data))
+            except:
+                logging.error('Unexpected error:', sys.exc_info()[0])
+                raise
+        return(response)

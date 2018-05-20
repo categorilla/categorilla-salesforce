@@ -4,6 +4,8 @@ except ImportError:
     from ConfigParser import ConfigParser  # ver. < 3.0
 
 import requests
+import json
+import logging
 
 class Categorilla:
 
@@ -20,14 +22,18 @@ class Categorilla:
 
     def send_text(self, records):
         url = self.BASE + self.PROJECT + self.PREDICT
-        body = {'top_n': self.TOP_N, 'records': records}
-        headers = {'Authorization': 'Token {}'.format(self.TOKEN)}
-        r = requests.post(url, data=body, headers=headers)
+        body = {'confidence': True, 'top_n': self.TOP_N, 'records': records}
+        headers = {'Authorization': 'Token {}'.format(self.TOKEN),
+                   'Content-Type': 'application/json'}
+        logging.debug(body)
+        r = requests.post(url, data=json.dumps(body), headers=headers)
+
         return r.text
 
 
     def get_predictions(self, body):
         url = self.BASE + self.PROJECT + self.POLL
-        headers = {'Authorization': 'Token {}'.format(self.TOKEN)}
-        r = requests.post(url, data=body, headers=headers)
+        headers = {'Authorization': 'Token {}'.format(self.TOKEN),
+                   'Content-Type': 'application/json'}
+        r = requests.post(url, data=json.dumps(body), headers=headers)
         return r.text
