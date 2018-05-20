@@ -1,7 +1,11 @@
 import time
+import json
+import logging
 
 from categorilla import Categorilla
 from salesforce import Cases
+
+logging.basicConfig(level=logging.INFO)
 
 sf = Cases()
 cat = Categorilla()
@@ -13,19 +17,23 @@ if not cases:
     quit()
 
 # call Categorilla
-predict_response = cat.send_text(cases)
+predict_response = json.loads(cat.send_text(cases))
+if type(predict_response) is str:
+    logging.error("predict response: %s" % predict_response)
+    quit()
 
 # try at most 60 times (1 minute)
 for _ in range(60):
     time.sleep(1)
 
     # try to get predictions
-    poll_response = cat.get_predictions(predict_response)
+    poll_response = json.loads(cat.get_predictions(predict_response))
+    logging.info("poll response: %s" % poll_response)
 
     # if predictions aren't availble, try again in a second
-    if poll_response.status != 'done':
+    if poll_response['status'] != 'done':
         continue
 
     # otherwise, update to Salesforce
-    sf.update_cases(poll_response.records)
+    sf.update_cases(poll_response['records'])
     break

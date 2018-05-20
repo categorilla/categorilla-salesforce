@@ -1,12 +1,13 @@
 [salesforce]
-username = XXXXXXXXXXXXX
-password = XXXXXXXXXXX
-token = XXXXXXXXXXXXX
+username = XXXXXXXXXXXXXX
+password = XXXXXXXXXXXXXX
+token = XXXXXXXXXXXXXX
 is_sandbox = false
 status_field = Categorization_State__c
 status_uncategorized = Uncategorized
 status_inprogress = Submitted
-status_complete = Complete
+status_complete = Categorized
+category_field = Category__c
 add_query = AND Status = 'New'
 
 [cateogrilla]
