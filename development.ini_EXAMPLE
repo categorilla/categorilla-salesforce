@@ -1,7 +1,7 @@
 [salesforce]
-username = XXXXXXXXXXXXX
-password = XXXXXXXXXXX
-token = XXXXXXXXXXXXX
+username = XXXXXXXXXXXXXX
+password = XXXXXXXXXXXXXX
+token = XXXXXXXXXXXXXX
 is_sandbox = false
 status_field = Categorization_State__c
 status_uncategorized = Uncategorized
