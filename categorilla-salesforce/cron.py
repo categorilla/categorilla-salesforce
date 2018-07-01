@@ -5,7 +5,14 @@ import logging
 from categorilla import Categorilla
 from salesforce import Cases
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('categorilla-saleforce')
+hdlr = logging.FileHandler('../categorilla-salesforce.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
+logger.setLevel(logging.INFO)
+
+logger.info("Starting new run.")
 
 sf = Cases()
 cat = Categorilla()
@@ -19,7 +26,7 @@ if not cases:
 # call Categorilla
 predict_response = json.loads(cat.send_text(cases))
 if type(predict_response) is str:
-    logging.error("predict response: %s" % predict_response)
+    logger.error("predict response: %s" % predict_response)
     quit()
 
 # try at most 60 times (1 minute)
@@ -28,7 +35,7 @@ for _ in range(60):
 
     # try to get predictions
     poll_response = json.loads(cat.get_predictions(predict_response))
-    logging.info("poll response: %s" % poll_response)
+    logger.info("poll response: %s" % poll_response)
 
     # if predictions aren't availble, try again in a second
     if poll_response['status'] != 'done':

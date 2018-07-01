@@ -6,10 +6,11 @@ description, and inserting the category back into Salesforce.
 
 **********
 **SALESFORCE SETUP**
+
 You will need to have a Salesforce account with the Service Cloud enabled.
 
-One the Case object, you need:
-* A custom picklist field with three values, representing:
+On the Case object, you need:
+* A "categorization status" custom picklist field with three values, representing:
     * Uncategorized cases (this should be the default value)
     * Cases where categorization is in progress
     * Categorized cases
@@ -18,7 +19,9 @@ One the Case object, you need:
 You will also need credentials for a Salesforce user to access the API. The
 user will need at least read/write access to the Case object and related fields.
 
+
 **CATEGORILLA SETUP**
+
 You will need:
 * A Categorilla account with a WEB API plan
 * A project with categories assigned to case training data
@@ -35,6 +38,7 @@ You will need:
 
 
 **CATEGORILLA-SALESFORCE SETUP**
+
 The Categorilla-Salesforce script is intended to be run regularly via a cron
 job.
 
@@ -42,19 +46,19 @@ Installation steps (Linux/Mac)
 1. Clone the `categorilla-salesforce` repo
 2. Open the project folder and create and activate a new environment (you will
     need virtualenv or your preferred env creation tool)
-    `python3 -m virtualenv env`
-    `source env/bin/activate`
+    `$ python3 -m virtualenv env`
+    `$ source env/bin/activate`
 3. Install requirements
-    `pip install -r requirements.txt`
+    `$ pip install -r requirements.txt`
 4. Create a copy of `development.ini_EXAMPLE`: `development.ini`
-5. Fill in your information:
+5. Fill in your information in `development.ini`:
 
 `[salesforce]`
 `username` Salesforce user credentials
 `password` Salesforce user credentials
 `token`    Salesforce user credentials
 `is_sandbox` whether or not this is a Salesforce sandbox environment
-`status_field` the custom picklist on the case for cateogrization state
+`status_field` the custom picklist on the case for categorization state
 `status_uncategorized` the picklist values
 `status_inprogress` the picklist values
 `status_complete` the picklist values
@@ -77,3 +81,9 @@ Installation steps (Linux/Mac)
 `confidence_threshold` How confident the prediction needs to be before this is
     added to the case. This should be set to a number between 0 and 1, with 1
     being absolute confidence and 0 being any prediction.
+
+6. Open your crontab:
+    `$ crontab -e`
+7. Using your editor, add a line for the cron.py file:
+    `* * * * * root source /path/to/cateogrilla-salesforce/env/bin/activate && /path/to/cateogrilla-salesforce/cateogrilla-salesforce/cron.py`
+8. Save your file.
