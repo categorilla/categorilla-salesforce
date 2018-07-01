@@ -1,4 +1,4 @@
-#categorilla-salesforce
+# categorilla-salesforce
 
 Categorilla-Salesforce is a python script that calls both the Salesforce and
 Categorilla APIs, pulling Salesforce cases, assigning a category based on the
