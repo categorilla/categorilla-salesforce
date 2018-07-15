@@ -11,14 +11,15 @@ from simple_salesforce import Salesforce, exceptions as sfexcept
 
 class Cases:
 
-    def __init__(self):
-        config = ConfigParser()
+    def __init__(self, config, logger):
         config.read('../development.ini')
         USERNAME = config.get('salesforce', 'username')
         PASSWORD = config.get('salesforce', 'password')
         TOKEN = config.get('salesforce', 'token')
         IS_SANDBOX = config.getboolean('salesforce', 'is_sandbox')
         CLIENT_ID = 'Categorilla'
+
+        self.logger = logger
 
         try:
             self.sf = Salesforce(username=USERNAME,
@@ -27,12 +28,12 @@ class Cases:
                                  sandbox=IS_SANDBOX,
                                  client_id=CLIENT_ID)
         except sfexcept.SalesforceAuthenticationFailed as err:
-            logging.error('Salesforce Error: {0}'.format(err))
-            logging.error('Username: {0}'.format(USERNAME))
-            logging.error('Password: {0}'.format(PASSWORD))
-            logging.error('Token: {0}'.format(TOKEN))
+            self.logger.error('Salesforce Error: {0}'.format(err))
+            self.logger.error('Username: {0}'.format(USERNAME))
+            self.logger.error('Password: {0}'.format(PASSWORD))
+            self.logger.error('Token: {0}'.format(TOKEN))
         except:
-            logging.error('Unexpected error:', sys.exc_info()[0])
+            self.logger.error('Unexpected error:', sys.exc_info()[0])
             raise
 
         self.STATUS_FIELD = config.get('salesforce', 'status_field')
@@ -61,13 +62,13 @@ class Cases:
         try:
             res = self.sf.query(case_query)
             num_records = res['totalSize']
-            logging.info('{0} records returned.'.format(num_records))
+            self.logger.info('{0} records returned.'.format(num_records))
         except sfexcept.SalesforceMalformedRequest as err:
-            logging.error('Query error: {0}'.format(err))
-            logging.error('Query: {0}'.format(case_query))
+            self.logger.error('Query error: {0}'.format(err))
+            self.logger.error('Query: {0}'.format(case_query))
             return
         except:
-            logging.error('Unexpected error:', sys.exc_info()[0])
+            self.logger.error('Unexpected error:', sys.exc_info()[0])
             raise
 
         # no records, exit
@@ -103,14 +104,15 @@ class Cases:
         if cases:
             try:
                 response = self.sf.bulk.Case.update(cases)
-                logging.info('Cases marked as submitted')
+                self.logger.info('Cases marked as submitted')
             except sfexcept.SalesforceMalformedRequest as err:
-                logging.error('Update error: {0}'.format(err))
-                logging.error('Update: {0}'.format(cases))
+                self.logger.error('Update error: {0}'.format(err))
+                self.logger.error('Update: {0}'.format(cases))
             except:
-                logging.error('Unexpected error:', sys.exc_info()[0])
+                self.logger.error('Unexpected error:', sys.exc_info()[0])
                 raise
-
+        self.logger.info('Cases')
+        self.logger.info(formatted_cases)
         return formatted_cases
 
 
@@ -158,15 +160,15 @@ class Cases:
                     self.STATUS_FIELD: self.STATUS_COMPLETE})
 
         # update them as in progress in SF
-        logging.debug(case_data)
+        self.logger.debug(case_data)
         if case_data:
             try:
                 response = self.sf.bulk.Case.update(case_data)
-                logging.info('Cases updated with categories')
+                self.logger.info('Cases updated with categories')
             except sfexcept.SalesforceMalformedRequest as err:
-                logging.error('Update error: {0}'.format(err))
-                logging.error('Update: {0}'.format(case_data))
+                self.logger.error('Update error: {0}'.format(err))
+                self.logger.error('Update: {0}'.format(case_data))
             except:
-                logging.error('Unexpected error:', sys.exc_info()[0])
+                self.logger.error('Unexpected error:', sys.exc_info()[0])
                 raise
         return(response)

@@ -82,8 +82,14 @@ Installation steps (Linux/Mac)
     added to the case. This should be set to a number between 0 and 1, with 1
     being absolute confidence and 0 being any prediction.
 
-6. Open your crontab:
+**ADD THE SCRIPT TO YOUR CRON TAB**
+You can run the categorilla script at regular intervals using a cron job. You
+will need to add the script to your crontab, using the python installed as part
+of the virtual environment you created.
+
+1. Open your crontab:
     `$ crontab -e`
-7. Using your editor, add a line for the cron.py file:
-    `* * * * * root source /path/to/cateogrilla-salesforce/env/bin/activate && /path/to/cateogrilla-salesforce/cateogrilla-salesforce/cron.py`
-8. Save your file.
+2. Add a line to execute the cron.py script. You will need to fill in your paths.
+
+    `* * * * * /YOURPATH/categorilla-salesforce/env/bin/python /YOURPATH/cateogrilla-salesforce/cateogrilla-salesforce/cron.py`
+3. Save your file.

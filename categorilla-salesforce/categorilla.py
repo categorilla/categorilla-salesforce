@@ -1,16 +1,12 @@
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from ConfigParser import ConfigParser  # ver. < 3.0
-
 import requests
 import json
 import logging
 
 class Categorilla:
 
-    def __init__(self):
-        config = ConfigParser()
+    def __init__(self, config, logger):
+        self.logger = logger
+
         config.read('../development.ini')
         self.BASE = config.get('categorilla', 'url_base')
         self.PROJECT = config.get('categorilla', 'project')
@@ -25,7 +21,7 @@ class Categorilla:
         body = {'confidence': True, 'top_n': self.TOP_N, 'records': records}
         headers = {'Authorization': 'Token {}'.format(self.TOKEN),
                    'Content-Type': 'application/json'}
-        logging.debug(body)
+        self.logger.debug(body)
         r = requests.post(url, data=json.dumps(body), headers=headers)
 
         return r.text
